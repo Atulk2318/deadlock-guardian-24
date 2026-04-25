@@ -16,7 +16,7 @@ import { PRESETS } from "@/lib/deadlock/presets";
 import { detectDeadlock } from "@/lib/deadlock/rag";
 import type { PreventionPolicy } from "@/lib/deadlock/prevention";
 
-import { RAGCanvas } from "@/components/deadlock/RAGCanvas";
+import { ResourceAllocationGraph } from "@/components/deadlock/ResourceAllocationGraph";
 import { SystemEditor } from "@/components/deadlock/SystemEditor";
 import { BankersPanel } from "@/components/deadlock/BankersPanel";
 import { CoffmanPanel } from "@/components/deadlock/CoffmanPanel";
@@ -94,7 +94,7 @@ function Index() {
         <div className="grid gap-5 lg:grid-cols-[1fr_minmax(360px,420px)]">
           {/* LEFT — graph, simulator, algorithm tabs */}
           <div className="space-y-5">
-            <RAGCanvas
+            <ResourceAllocationGraph
               state={sys.state}
               deadlocked={detection.deadlocked}
               cycles={detection.cycles}

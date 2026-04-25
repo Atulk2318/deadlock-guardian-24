@@ -30,17 +30,11 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Deadlock Toolkit" },
-      { name: "description", content: "Interactive toolkit to detect, prevent and recover from deadlocks with Banker's Algorithm, Resource Allocation Graphs and Coffman conditions." },
-      { name: "author", content: "Deadlock Toolkit" },
-      { property: "og:title", content: "Deadlock Toolkit" },
-      { property: "og:description", content: "Interactive toolkit to detect, prevent and recover from deadlocks with Banker's Algorithm, Resource Allocation Graphs and Coffman conditions." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Deadlock Toolkit" },
-      { name: "twitter:description", content: "Interactive toolkit to detect, prevent and recover from deadlocks with Banker's Algorithm, Resource Allocation Graphs and Coffman conditions." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/edf07663-56b6-4a58-8d35-13828f7d8b48/id-preview-86b17a59--df890f00-8b13-4e08-b6e7-c03f5effe416.lovable.app-1777131332325.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/edf07663-56b6-4a58-8d35-13828f7d8b48/id-preview-86b17a59--df890f00-8b13-4e08-b6e7-c03f5effe416.lovable.app-1777131332325.png" },
+      {
+        name: "description",
+        content:
+          "Detect, prevent and recover from deadlocks with Banker's Algorithm, Resource Allocation Graphs and Coffman conditions.",
+      },
     ],
     links: [
       {

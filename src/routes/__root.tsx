@@ -29,11 +29,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Deadlock Toolkit" },
+      { name: "description", content: "Interactive toolkit to detect, prevent and recover from deadlocks with Banker's Algorithm, Resource Allocation Graphs and Coffman conditions." },
+      { name: "author", content: "Deadlock Toolkit" },
+      { property: "og:title", content: "Deadlock Toolkit" },
+      { property: "og:description", content: "Real-time deadlock detection, prevention and recovery with Banker's, RAG visualization and scenario simulator." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
@@ -52,7 +52,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>

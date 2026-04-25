@@ -7,54 +7,79 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { PlayCircle, Check, X } from "lucide-react";
 import { requestResources } from "@/lib/deadlock/bankers";
+import { evaluatePolicy, POLICY_LABELS, type PreventionPolicy } from "@/lib/deadlock/prevention";
 import type { SystemState } from "@/lib/deadlock/types";
 
-type Outcome = {
+type EmitArgs = {
   granted: boolean;
-  reason: string;
   process: string;
   request: number[];
+  reason: string;
+  policy: PreventionPolicy;
 };
 
 export function RequestSimulator({
   state,
+  policy,
   onApply,
+  onEvent,
 }: {
   state: SystemState;
+  policy: PreventionPolicy;
   onApply: (next: SystemState) => void;
+  onEvent: (e: EmitArgs) => void;
 }) {
   const [processId, setProcessId] = useState(state.processes[0]?.id ?? "");
   const [vec, setVec] = useState<number[]>(state.resources.map(() => 0));
-  const [history, setHistory] = useState<Outcome[]>([]);
 
-  // Re-init vec if resource count changes
   if (vec.length !== state.resources.length) {
     setVec(state.resources.map(() => 0));
   }
-  // Re-init process if removed
   if (processId && !state.processes.some((p) => p.id === processId)) {
     setProcessId(state.processes[0]?.id ?? "");
   }
 
   const submit = () => {
     if (!processId) return;
-    const r = requestResources(state, processId, vec);
     const proc = state.processes.find((p) => p.id === processId)!;
-    setHistory((h) => [
-      { granted: r.granted, reason: r.reason, process: proc.name, request: [...vec] },
-      ...h.slice(0, 6),
-    ]);
+
+    // First evaluate policy
+    const decision = evaluatePolicy(state, processId, vec, policy);
+    if (!decision.allowed && policy !== "bankers-avoidance") {
+      onEvent({
+        granted: false,
+        process: proc.name,
+        request: [...vec],
+        reason: `[${POLICY_LABELS[policy]}] ${decision.reason}`,
+        policy,
+      });
+      return;
+    }
+
+    // Apply Banker's-style grant when policy allows
+    const r = requestResources(state, processId, vec);
+    onEvent({
+      granted: r.granted,
+      process: proc.name,
+      request: [...vec],
+      reason: r.reason,
+      policy,
+    });
     if (r.granted) onApply(r.nextState);
   };
 
   return (
     <Card className="p-4">
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold">Request Simulator</h3>
-        <p className="text-xs text-muted-foreground">
-          Simulate a process requesting resources. Banker's decides whether granting it keeps
-          the system safe.
-        </p>
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-semibold">Request Simulator</h3>
+          <p className="text-xs text-muted-foreground">
+            Simulate a request and watch the active policy decide its fate.
+          </p>
+        </div>
+        <Badge variant="outline" className="border-primary/40 text-primary">
+          {POLICY_LABELS[policy]}
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-[160px_1fr_auto] sm:items-end">
@@ -78,7 +103,7 @@ export function RequestSimulator({
           <div className="flex flex-wrap gap-1.5">
             {state.resources.map((r, i) => (
               <div key={r.id} className="flex items-center gap-1">
-                <span className="text-[10px] font-mono text-muted-foreground">{r.name}</span>
+                <span className="font-mono text-[10px] text-muted-foreground">{r.name}</span>
                 <Input
                   type="number"
                   min={0}
@@ -94,43 +119,25 @@ export function RequestSimulator({
             ))}
           </div>
         </div>
-        <Button onClick={submit} disabled={!processId} className="bg-gradient-primary text-primary-foreground">
-          <PlayCircle className="h-4 w-4" /> Request
+        <Button
+          onClick={submit}
+          disabled={!processId}
+          className="bg-gradient-primary text-primary-foreground"
+        >
+          <PlayCircle className="h-4 w-4" /> Submit
         </Button>
       </div>
 
-      {history.length > 0 && (
-        <div className="mt-4">
-          <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Recent decisions
-          </h4>
-          <ul className="space-y-1.5">
-            {history.map((h, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 rounded-md border border-border bg-background/40 p-2 text-xs"
-              >
-                <Badge
-                  className={
-                    h.granted
-                      ? "bg-success text-success-foreground"
-                      : "bg-destructive text-destructive-foreground"
-                  }
-                >
-                  {h.granted ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                  {h.granted ? "Granted" : "Denied"}
-                </Badge>
-                <div className="min-w-0">
-                  <div className="font-mono">
-                    {h.process} → request [{h.request.join(", ")}]
-                  </div>
-                  <div className="text-muted-foreground">{h.reason}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <p className="mt-3 flex items-start gap-1.5 text-[11px] text-muted-foreground">
+        <span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-success/15 text-success">
+          <Check className="h-2.5 w-2.5" />
+        </span>
+        Granted requests update Allocation.
+        <span className="ml-2 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+          <X className="h-2.5 w-2.5" />
+        </span>
+        Denied requests log a reason in the timeline.
+      </p>
     </Card>
   );
 }
